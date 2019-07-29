@@ -13,6 +13,14 @@ For the sake of simplicity, we will be using `/v2/botinsight/data/api/getaudittr
 
 ![BOT INSIGHT SWAGGER](./screenshots/BotInsight_Swagger.png)
 
+## Tableau
+
+You can download and install any version (https://www.tableau.com/support/releases) of Tableau desktop to follow along with this guide.
+
+## Node JS
+You can install any LTS version of NodeJS (https://nodejs.org/en/) at the time of you reading this document
+
+## Steps for writing WDC
 
 1. Clone the code
 
@@ -23,12 +31,13 @@ git clone https://github.com/saichandu415/AA_BotInsight_Tableau_WDC.git
 
 3. The core functionality is implemented in the .js file within 4 steps
 
-        1. Make connector
-        2. Create getSchema implementation
-            This creates the Table schema in tableau.  It is just the representation of the JSON response for tableau columns
-        3. Create getData implementation
-            Here we make the necessary AJAX Calls to get the data from API's and transform them to the Table Schema
-        4. Register connector
+    1. Make connector
+    2. Create getSchema implementation
+        This creates the Table schema in tableau.  It is just the representation of the JSON response for tableau columns
+    3. Create getData implementation
+        Here we make the necessary AJAX Calls to get the data from API's and transform them to the Table Schema
+        > During the implementation make sure the [Authentication](https://github.com/saichandu415/AA_BotInsight_Tableau_WDC#authentication) is called first then any of the BOTINSIGHT API's
+    4. Register connector
 
 4. We need to understand the API's we are going to make connector for, In this case the flow is we create the authentication token from `/v1/authentication` and we use it within the header of the `/v2/botinsight/data/api/getaudittraildata` We will implement the same in the connector
 
@@ -150,6 +159,7 @@ cache-control: no-cache
 
 #### getData
 ```javascript
+
 myConnector.getData = function (table, doneCallback) {
         var postBody = {
             date: "2019-07-23"
@@ -164,6 +174,7 @@ myConnector.getData = function (table, doneCallback) {
         // tableau.log("My console message goes here!");
 
         $.ajax({
+            // using Authentication API for obtaining token
             url: 'http://localhost:8889/localhost/v1/authentication',
             headers: {
                 "Content-Type": "application/json"
@@ -173,10 +184,11 @@ myConnector.getData = function (table, doneCallback) {
             async: false,
             data: JSON.stringify(authenticateBody),
         }).done(function (authenticationData) {
-
+            // Calling getAudittraildata API
             $.ajax({
                 url: 'http://localhost:8889/localhost/v2/botinsight/data/api/getaudittraildata',
                 headers: {
+                    // using the authentication token from the previous call
                     'X-Authorization': authenticationData.token,
                     'Access-Control-Allow-Origin': 'http://localhost:8888'
                 },
